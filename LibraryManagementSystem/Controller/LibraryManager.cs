@@ -5,20 +5,38 @@ using LibraryManagementSystem.View;
 namespace LibraryManagementSystem.Controller {
     internal class LibraryManager {
         public void HandleMainMenu() {
+            List<MenuHandler> mainMenuAction = new List<MenuHandler>() {
+                new MenuHandler("Add New Book", AddNewBook ),
+                new MenuHandler("View Books", ViewBooks),
+                new MenuHandler("Exit", () => { })
+            };
+
+            HandleMenuActions("Main Menu", mainMenuAction);
+        }
+
+        public void HandleMenuActions(string menuTitle, List<MenuHandler> menuActions) {
             while (true) {
                 Console.Clear();
-                DisplayMainMenu();
-                int choice = InputManager.GetMenuChoice(3);
-                switch (choice) {
-                    case 1:
-                        AddNewBook();
-                        break;
-                    case 2:
-                        ViewBooks();
-                        break;
-                    case 3:
-                        return;
+                Console.WriteLine($"===== {menuTitle} =====\n");
+                OutputManager.DisplayMenuTitles(menuActions);
+
+                Console.Write("\n[Menu] Enter your choice: ");
+                string userInput = Console.ReadLine();
+                bool isInteger = int.TryParse(userInput, out int choice);
+
+                if (!isInteger) {
+                    Console.WriteLine("[Error] Invalid Input!");
                 }
+                else if (choice < 1 || choice > menuActions.Count) {
+                    Console.WriteLine($"[Error] Choice should be between 1 to {menuActions.Count}");
+                } else if (choice == menuActions.Count) {
+                    return;
+                }
+                else {
+                    menuActions[choice - 1].Function.Invoke();
+                }
+                Console.WriteLine("\nPlease press a key to continue...");
+                Console.ReadKey();
             }
         }
 
@@ -36,8 +54,6 @@ namespace LibraryManagementSystem.Controller {
                     Console.WriteLine("------------------------------\n");
                 }
             }
-            Console.WriteLine("Please press a key to continue...");
-            Console.ReadKey();
         }
 
         private void AddNewBook() {
@@ -48,15 +64,6 @@ namespace LibraryManagementSystem.Controller {
             string author = InputManager.GetStringValue("Book Author");
             LibraryDatabase.AddBook(new Book(id, title, author));
             Console.WriteLine("[Success] Book added successfully.\n");
-            Console.WriteLine("Please press a key to continue...");
-            Console.ReadKey();
-        }
-
-        private void DisplayMainMenu() {
-            Console.WriteLine("===== Main Menu =====\n");
-            Console.WriteLine("1. Add Books");
-            Console.WriteLine("2. View Books");
-            Console.WriteLine("3. Exit");
         }
     }
 }
